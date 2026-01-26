@@ -1,9 +1,13 @@
 """
 run_example.py - Waller Decomposition EUR Forecast
-Usage: python3 run_example.py sample_well.csv
+Usage: 
+  Single well:  python3 run_example.py sample_well.csv
+  Batch mode:   python3 run_example.py --batch ./wells/
 """
 
 import sys
+import os
+import glob
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -14,6 +18,7 @@ ECON_LIMIT_GAS = 50
 ECON_LIMIT_OIL = 5
 ECON_LIMIT_WATER = 10
 T_MAX = 1800
+FLOWBACK_DAYS = 60
 
 def load_data(filepath):
     df = pd.read_csv(filepath)
@@ -63,6 +68,7 @@ def forecast_phase(t, rate, econ_limit, n_samples=500, t_max=1800):
     
     t_forecast = np.linspace(1, t_max, 1000)
     eur_samples = []
+    q_samples = []
     
     for _ in range(n_samples):
         qi_s = max(qi + qi_err * np.random.randn(), 10)
@@ -70,94 +76,199 @@ def forecast_phase(t, rate, econ_limit, n_samples=500, t_max=1800):
         n_s = np.clip(n + n_err * np.random.randn(), 0.1, 2.0)
         q_forecast = power_law_decline(t_forecast, qi_s, D_s, n_s)
         q_forecast = np.where(q_forecast >= econ_limit, q_forecast, 0)
+        q_samples.append(q_forecast)
         eur_samples.append(np.trapz(q_forecast, t_forecast) / 1000)
     
-    p10, p50, p90 = np.percentile(eur_samples, [10, 50, 90])
-    q_p50 = power_law_decline(t_forecast, *params)
-    q_p50 = np.where(q_p50 >= econ_limit, q_p50, 0)
+    q_samples = np.array(q_samples)
+    q_p10 = np.percentile(q_samples, 10, axis=0)
+    q_p50 = np.percentile(q_samples, 50, axis=0)
+    q_p90 = np.percentile(q_samples, 90, axis=0)
     
-    return {"p10": p10, "p50": p50, "p90": p90, "params": params, "t": t_forecast, "q": q_p50}
+    p10, p50, p90 = np.percentile(eur_samples, [10, 50, 90])
+    
+    return {
+        "p10": p10, "p50": p50, "p90": p90, 
+        "params": params, "t": t_forecast,
+        "q_p10": q_p10, "q_p50": q_p50, "q_p90": q_p90
+    }
 
-def main(filepath):
-    print(f"Loading: {filepath}")
+def run_single_well(filepath, save_csv=True, save_plot=True, quiet=False):
+    if not quiet:
+        print(f"Loading: {filepath}")
     data, well_type = load_data(filepath)
     t = data["days"]
-    print(f"  {len(t)} data points, {t[-1]:.0f} days")
+    
+    flowback_mask = t <= FLOWBACK_DAYS
+    n_flowback = np.sum(flowback_mask)
+    
+    if not quiet:
+        print(f"  {len(t)} data points, {t[-1]:.0f} days")
+        if n_flowback > 0:
+            print(f"  Flowback period: {n_flowback} points ({FLOWBACK_DAYS} days)")
     
     results = {}
     
     if "gas" in data:
-        print("  Forecasting gas...")
         results["gas"] = forecast_phase(t, data["gas"], ECON_LIMIT_GAS, N_SAMPLES, T_MAX)
-    
     if "oil" in data:
-        print("  Forecasting oil...")
         results["oil"] = forecast_phase(t, data["oil"], ECON_LIMIT_OIL, N_SAMPLES, T_MAX)
-    
     if "water" in data:
-        print("  Forecasting water...")
         results["water"] = forecast_phase(t, data["water"], ECON_LIMIT_WATER, N_SAMPLES, T_MAX)
     
-    print("")
-    print("=" * 50)
-    print("EUR FORECAST")
-    print("=" * 50)
+    if not quiet:
+        print("")
+        print("=" * 50)
+        print("EUR FORECAST")
+        print("=" * 50)
+        if "gas" in results:
+            r = results["gas"]
+            print(f"  Gas (MMSCF):   P10={r['p10']:>7.1f}  P50={r['p50']:>7.1f}  P90={r['p90']:>7.1f}")
+        if "oil" in results:
+            r = results["oil"]
+            print(f"  Oil (MBO):     P10={r['p10']:>7.1f}  P50={r['p50']:>7.1f}  P90={r['p90']:>7.1f}")
+        if "water" in results:
+            r = results["water"]
+            print(f"  Water (MBW):   P10={r['p10']:>7.1f}  P50={r['p50']:>7.1f}  P90={r['p90']:>7.1f}")
+        print("=" * 50)
+        
+        if "gas" in data and "oil" in data:
+            gor = data["gas"] / np.where(data["oil"] > 0, data["oil"], 0.001)
+            print(f"\nGOR: Initial={gor[0]:.0f}  Current={gor[-1]:.0f} scf/bbl")
+        if "water" in data and "oil" in data:
+            wor = data["water"] / np.where(data["oil"] > 0, data["oil"], 0.001)
+            print(f"WOR: Initial={wor[0]:.1f}  Current={wor[-1]:.1f} bbl/bbl")
+        if "water" in data and "gas" in data and "oil" not in data:
+            wgr = data["water"] / np.where(data["gas"] > 0, data["gas"], 0.001) * 1000
+            print(f"WGR: Initial={wgr[0]:.1f}  Current={wgr[-1]:.1f} bbl/MMscf")
     
-    if "gas" in results:
-        r = results["gas"]
-        print(f"  Gas (MMSCF):   P10={r['p10']:>7.1f}  P50={r['p50']:>7.1f}  P90={r['p90']:>7.1f}")
+    basename = os.path.splitext(os.path.basename(filepath))[0]
     
-    if "oil" in results:
-        r = results["oil"]
-        print(f"  Oil (MBO):     P10={r['p10']:>7.1f}  P50={r['p50']:>7.1f}  P90={r['p90']:>7.1f}")
+    if save_csv:
+        csv_rows = []
+        t_out = results[list(results.keys())[0]]["t"]
+        for i, day in enumerate(t_out):
+            row = {"day": int(day)}
+            for phase in results:
+                row[f"{phase}_p10"] = results[phase]["q_p10"][i]
+                row[f"{phase}_p50"] = results[phase]["q_p50"][i]
+                row[f"{phase}_p90"] = results[phase]["q_p90"][i]
+            csv_rows.append(row)
+        
+        csv_df = pd.DataFrame(csv_rows)
+        csv_path = f"{basename}_forecast.csv"
+        csv_df.to_csv(csv_path, index=False)
+        if not quiet:
+            print(f"\nSaved: {csv_path}")
     
-    if "water" in results:
-        r = results["water"]
-        print(f"  Water (MBW):   P10={r['p10']:>7.1f}  P50={r['p50']:>7.1f}  P90={r['p90']:>7.1f}")
+    if save_plot:
+        n_plots = len(results)
+        fig, axes = plt.subplots(1, n_plots, figsize=(5*n_plots, 5), dpi=150)
+        if n_plots == 1:
+            axes = [axes]
+        
+        colors = {"gas": "red", "oil": "green", "water": "blue"}
+        units = {"gas": "MSCF/d", "oil": "bbl/d", "water": "bwpd"}
+        eur_units = {"gas": "MMSCF", "oil": "MBO", "water": "MBW"}
+        
+        for i, phase in enumerate(results.keys()):
+            ax = axes[i]
+            r = results[phase]
+            
+            ax.fill_between(r["t"], r["q_p10"], r["q_p90"], color=colors[phase], alpha=0.2, label="P10-P90")
+            ax.plot(r["t"], r["q_p50"], color=colors[phase], linewidth=2, label="P50 Forecast")
+            
+            obs_flowback = data[phase][flowback_mask] if n_flowback > 0 else []
+            obs_production = data[phase][~flowback_mask]
+            t_flowback = t[flowback_mask] if n_flowback > 0 else []
+            t_production = t[~flowback_mask]
+            
+            if len(t_flowback) > 0:
+                ax.scatter(t_flowback, obs_flowback, s=30, color="orange", alpha=0.7, label="Flowback", zorder=5)
+            ax.scatter(t_production, obs_production, s=30, color="black", alpha=0.7, label="Production", zorder=5)
+            
+            ax.axvline(x=t[-1], color="gray", linestyle=":", linewidth=1)
+            if n_flowback > 0:
+                ax.axvline(x=FLOWBACK_DAYS, color="orange", linestyle="--", linewidth=1, alpha=0.5)
+            
+            ax.set_xlabel("Time (days)")
+            ax.set_ylabel(f"{phase.capitalize()} ({units[phase]})")
+            ax.set_title(f"{phase.capitalize()} EUR: {r['p50']:.1f} {eur_units[phase]}")
+            ax.legend(loc="upper right", fontsize=8)
+            ax.grid(True, alpha=0.3)
+            ax.set_xlim(0, T_MAX)
+            ax.set_ylim(0, None)
+        
+        plt.tight_layout()
+        plot_path = f"{basename}_forecast.png"
+        plt.savefig(plot_path, dpi=150)
+        plt.close()
+        if not quiet:
+            print(f"Saved: {plot_path}")
     
-    print("=" * 50)
+    return {
+        "file": basename,
+        "gas_p50": results.get("gas", {}).get("p50"),
+        "oil_p50": results.get("oil", {}).get("p50"),
+        "water_p50": results.get("water", {}).get("p50")
+    }
+
+def run_batch(folder_path):
+    csv_files = glob.glob(os.path.join(folder_path, "*.csv"))
+    if not csv_files:
+        print(f"No CSV files found in {folder_path}")
+        return
     
-    if "gas" in data and "oil" in data:
-        gor = data["gas"] / np.where(data["oil"] > 0, data["oil"], 0.001)
-        print(f"\nGOR: Initial={gor[0]:.0f}  Current={gor[-1]:.0f} scf/bbl")
+    print(f"Found {len(csv_files)} wells in {folder_path}")
+    print("=" * 60)
     
-    if "water" in data and "oil" in data:
-        wor = data["water"] / np.where(data["oil"] > 0, data["oil"], 0.001)
-        print(f"WOR: Initial={wor[0]:.1f}  Current={wor[-1]:.1f} bbl/bbl")
+    summary = []
+    for filepath in sorted(csv_files):
+        try:
+            result = run_single_well(filepath, save_csv=True, save_plot=True, quiet=True)
+            summary.append(result)
+            gas = f"{result['gas_p50']:.1f}" if result['gas_p50'] else "-"
+            oil = f"{result['oil_p50']:.1f}" if result['oil_p50'] else "-"
+            water = f"{result['water_p50']:.1f}" if result['water_p50'] else "-"
+            print(f"  {result['file']:30s}  Gas={gas:>8}  Oil={oil:>8}  Water={water:>8}")
+        except Exception as e:
+            print(f"  {os.path.basename(filepath):30s}  ERROR: {e}")
     
-    if "water" in data and "gas" in data and "oil" not in data:
-        wgr = data["water"] / np.where(data["gas"] > 0, data["gas"], 0.001) * 1000
-        print(f"WGR: Initial={wgr[0]:.1f}  Current={wgr[-1]:.1f} bbl/MMscf")
+    print("=" * 60)
     
-    n_plots = len(results)
-    fig, axes = plt.subplots(1, n_plots, figsize=(5*n_plots, 5), dpi=150)
-    if n_plots == 1:
-        axes = [axes]
+    summary_df = pd.DataFrame(summary)
+    summary_df.to_csv("batch_summary.csv", index=False)
+    print(f"\nSaved: batch_summary.csv")
     
-    colors = {"gas": "red", "oil": "green", "water": "blue"}
-    units = {"gas": "MSCF/d", "oil": "bbl/d", "water": "bwpd"}
-    eur_units = {"gas": "MMSCF", "oil": "MBO", "water": "MBW"}
+    totals = {}
+    if summary_df["gas_p50"].notna().any():
+        totals["gas"] = summary_df["gas_p50"].sum()
+    if summary_df["oil_p50"].notna().any():
+        totals["oil"] = summary_df["oil_p50"].sum()
+    if summary_df["water_p50"].notna().any():
+        totals["water"] = summary_df["water_p50"].sum()
     
-    for i, phase in enumerate(results.keys()):
-        ax = axes[i]
-        r = results[phase]
-        ax.scatter(t, data[phase], s=30, color="black", alpha=0.7, label="Observed")
-        ax.plot(r["t"], r["q"], color=colors[phase], linewidth=2, label="P50 Forecast")
-        ax.axvline(x=t[-1], color="gray", linestyle=":", linewidth=1)
-        ax.set_xlabel("Time (days)")
-        ax.set_ylabel(f"{phase.capitalize()} ({units[phase]})")
-        ax.set_title(f"{phase.capitalize()} EUR: {r['p50']:.1f} {eur_units[phase]}")
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        ax.set_xlim(0, T_MAX)
-        ax.set_ylim(0, None)
+    print("\nPORTFOLIO TOTALS (P50):")
+    if "gas" in totals:
+        print(f"  Gas:   {totals['gas']:>10.1f} MMSCF")
+    if "oil" in totals:
+        print(f"  Oil:   {totals['oil']:>10.1f} MBO")
+    if "water" in totals:
+        print(f"  Water: {totals['water']:>10.1f} MBW")
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage:")
+        print("  Single well:  python3 run_example.py <well.csv>")
+        print("  Batch mode:   python3 run_example.py --batch <folder>")
+        sys.exit(1)
     
-    plt.tight_layout()
-    plt.savefig("forecast_output.png", dpi=150)
-    print("\nSaved: forecast_output.png")
+    if sys.argv[1] == "--batch":
+        if len(sys.argv) < 3:
+            print("Error: Specify folder path")
+            sys.exit(1)
+        run_batch(sys.argv[2])
+    else:
+        run_single_well(sys.argv[1])
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python3 run_example.py <your_well.csv>")
-        sys.exit(1)
-    main(sys.argv[1])
+    main()
