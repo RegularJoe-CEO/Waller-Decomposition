@@ -1,0 +1,7 @@
+numpy
+scipy
+PyWavelets
+matplotlib
+emcee
+pandas
+streamlit
