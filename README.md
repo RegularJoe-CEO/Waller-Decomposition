@@ -1,6 +1,6 @@
 # Waller Decomposition
 
-![Waller Decomposition EUR Forecast](sample_well_forecast.png)
+![10,000 ft Permian Wolfcamp A - EUR Forecast](sample_well_forecast.png)
 
 **Multi-Resolution Wavelet EUR Forecasting for Unconventional Wells**
 
@@ -78,7 +78,7 @@ CSV with these columns:
 | File | Description |
 |------|-------------|
 | run_example.py | Main forecasting tool |
-| sample_well.csv | Example gas well data |
+| sample_well.csv | Example 10,000 ft Permian Wolfcamp A well |
 | waller_decomposition_v3.md | Technical white paper |
 | requirements.txt | Python dependencies |
 
