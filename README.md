@@ -1,117 +1,96 @@
 # Waller Decomposition
-[![DOI](https://zenodo.org/badge/1142184551.svg)](https://doi.org/10.5281/zenodo.18372227)
 
-![EUR Forecast with Uncertainty Quantification](waller_decomposition_forecast.png)
-**Multi-Resolution Wavelet Decomposition for EUR Forecasting in Unconventional Wells**
+**Multi-Resolution Wavelet EUR Forecasting for Unconventional Wells**
 
 **Author:** Eric Waller  
-**Version:** 3.0  
+**Version:** 3.1  
 **License:** All Rights Reserved (see LICENSE)
 
-## Description
+## What It Does
 
-The Waller Decomposition is a physics-based wavelet framework for Estimated Ultimate Recovery (EUR) forecasting in multi-stage fractured horizontal wells. The method:
+Forecasts EUR (Estimated Ultimate Recovery) with P10/P50/P90 uncertainty bounds for:
+- **Gas wells** (MMSCF)
+- **Oil wells** (MBO)  
+- **Water production** (MBW)
 
-1. Decomposes Rate-Normalized Pressure (RNP) signals via discrete wavelet transform
-2. Maps wavelet scales to drainage distances using hydraulic diffusivity
-3. Fits decline models to each component independently
-4. Reconstructs composite EUR from component contributions
-5. Quantifies uncertainty via Bayesian parameter estimation (MCMC)
-6. Corrects for parent-child well interference
+Features:
+- Multi-phase forecasting (gas, oil, water)
+- GOR/WOR/WGR ratio tracking
+- Flowback period detection (first 60 days flagged)
+- Confidence bands (P10-P90)
+- CSV export for ARIES/PHDWin import
+- Batch mode for multi-well portfolios
 
-## Key Results
+## Installation
 
-| Validation | Result |
-|------------|--------|
-| Wavelet Sensitivity | CV = 1.48% (EUR varies < ±2.2% across 8 wavelet families) |
-| Synthetic Validation | ~10% mean error, true EUR within P10-P90 bounds |
+pip install -r requirements.txt
+
+## Quick Start
+
+### Single Well
+
+python3 run_example.py sample_well.csv
+
+Outputs:
+- sample_well_forecast.png - Plot with P10/P50/P90 bands
+- sample_well_forecast.csv - Daily forecast for import
+
+### Batch Mode (Multiple Wells)
+
+mkdir wells
+cp *.csv wells/
+python3 run_example.py --batch ./wells/
+
+Outputs:
+- Individual plots and CSVs per well
+- batch_summary.csv - Portfolio summary
+- Portfolio totals (P50)
+
+## Input Data Format
+
+CSV with these columns:
+
+| Column | Description | Units | Required |
+|--------|-------------|-------|----------|
+| days | Days since first production | days | Yes |
+| pressure_psi | Flowing pressure (THP or BHP) | psi | Yes |
+| rate_mscfd | Gas rate | MSCF/day | If gas well |
+| rate_bblpd | Oil rate | bbl/day | If oil well |
+| rate_bwpd | Water rate | bbl/day | Optional |
+
+### Data Requirements
+- Minimum: 30+ days (90+ preferred)
+- Remove or interpolate shut-in periods
+- Small gaps (<30 days) acceptable
+
+## Output Interpretation
+
+| Value | Meaning |
+|-------|---------|
+| P10 | 90% chance EUR exceeds this (conservative) |
+| P50 | Best estimate (median) |
+| P90 | 10% chance EUR exceeds this (optimistic) |
 
 ## Repository Contents
 
 | File | Description |
 |------|-------------|
-| `waller_decomposition_v3.md` | Complete technical white paper (Markdown) |
-| `wavelet_sensitivity.py` | Wavelet basis sensitivity analysis script |
-| `synthetic_validation.py` | Synthetic well validation with Monte Carlo |
-| `requirements.txt` | Python dependencies |
-| `README.md` | This file |
-
-## Installation
-
-```bash
-pip install -r requirements.txt
-```
-
-## Usage
-
-### Wavelet Sensitivity Analysis
-
-Tests EUR sensitivity across 8 wavelet families (Daubechies, Symlet, Coiflet):
-
-```bash
-python wavelet_sensitivity.py
-```
-
-**Expected Output:**
-```
-Wavelet Basis Sensitivity Analysis
-==================================================
-Wavelet         EUR (MMSCF)     Δ from Baseline
---------------------------------------------------
-Daubechies-4    7,100.7         baseline
-Daubechies-6    6,992.6         -1.52%
-...
---------------------------------------------------
-Summary Statistics:
-  Mean EUR:     7,054.8 MMSCF
-  Std Dev:      104.5 MMSCF
-  CV:           1.48%
-```
-
-### Synthetic Validation
-
-Runs 100 Monte Carlo realizations on a 3-stage synthetic well:
-
-```bash
-python synthetic_validation.py
-```
-
-**Expected Output:**
-```
-Synthetic Validation: Waller Decomposition
-============================================================
-D.1 Synthetic Well Design
-------------------------------------------------------------
-True EUR: 5,547 MMSCF
-
-D.3 Monte Carlo Results
-------------------------------------------------------------
-Mean Estimated EUR       6,127 MMSCF
-Mean Error               +10.5%
-P10-P90 Range            5,507 - 6,767 MMSCF
-```
+| run_example.py | Main forecasting tool |
+| sample_well.csv | Example gas well data |
+| waller_decomposition_v3.md | Technical white paper |
+| requirements.txt | Python dependencies |
 
 ## Citation
 
-If you use this methodology, please cite:
-
-```
 Waller, E. (2026). The Waller Decomposition: Multi-Resolution Wavelet EUR
 Forecasting for Multi-Stage Fractured Horizontal Wells. Technical White Paper v3.0.
-```
 
 ## License
 
-**License:** All Rights Reserved (see LICENSE)
 Copyright (c) 2026 Eric Waller. All Rights Reserved.
-
-This work is provided for academic review and personal evaluation only.
-Commercial use, redistribution, or derivative works require explicit
-written permission from the author.
 
 For licensing inquiries: ewaller.com
 
 ## Contact
 
-- Website: [ewaller.com](https://ewaller.com)
-- Company: [luxiedge.com](https://luxiedge.com)
+- Website: ewaller.com
