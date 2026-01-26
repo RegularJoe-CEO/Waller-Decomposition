@@ -86,6 +86,7 @@ CSV with these columns:
 
 Waller, E. (2026). The Waller Decomposition: Multi-Resolution Wavelet EUR
 Forecasting for Multi-Stage Fractured Horizontal Wells. Technical White Paper v3.0.
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18372228.svg)](https://doi.org/10.5281/zenodo.18372228)
 
 ## License
 
