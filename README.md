@@ -7,6 +7,11 @@
 **Author:** Eric Waller  
 **Version:** 3.1  
 **License:** All Rights Reserved (see LICENSE)
+## Live Demo
+
+Try the Waller Decomposition tool: **[https://Waller-Decomposition.replit.app](https://Waller-Decomposition.replit.app)**
+
+Upload your own CSV or use the sample data to test EUR forecasting.
 
 ## What It Does
 
