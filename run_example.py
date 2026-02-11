@@ -230,7 +230,8 @@ def run_single_well(filepath, save_csv=True, save_plot=True, quiet=False):
                 bbox=dict(boxstyle='round', facecolor='white', edgecolor='gray', alpha=0.9))
         
         # Title
-        ax.set_title('10,000 ft Permian Wolfcamp A Lateral', fontsize=14, fontweight='bold', pad=10)
+        plot_title = basename.replace('_', ' ').title()
+        ax.set_title(plot_title, fontsize=14, fontweight='bold', pad=10)
         
         plt.tight_layout()
         plot_path = f"{basename}_forecast.png"

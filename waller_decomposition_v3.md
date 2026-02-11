@@ -7,13 +7,7 @@
 **Author:** Eric Waller  
 **Date:** January 2026  
 **Status:** Research  
-**License:** Copyright (c) 2026 Eric Waller. All Rights Reserved.
-
-This work is provided for academic review and personal evaluation only.
-Commercial use, redistribution, or derivative works require explicit
-written permission from the author.
-
-For licensing inquiries: ewaller.com
+**License:** All Rights Reserved (see LICENSE file)
 
 ---
 

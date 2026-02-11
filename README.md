@@ -7,11 +7,6 @@
 **Author:** Eric Waller  
 **Version:** 3.1  
 **License:** All Rights Reserved (see LICENSE)
-## Live Demo
-
-Try the Waller Decomposition tool: **[https://Waller-Decomposition.replit.app](https://Waller-Decomposition.replit.app)**
-
-Upload your own CSV or use the sample data to test EUR forecasting.
 
 ## What It Does
 
@@ -30,75 +25,54 @@ Features:
 
 ## Installation
 
-pip install -r requirements.txt
+`pip install -r requirements.txt`
 
 ## Quick Start
 
 ### Single Well
-
-python3 run_example.py sample_well.csv
+`python3 run_example.py sample_well.csv`
 
 Outputs:
-- sample_well_forecast.png - Plot with P10/P50/P90 bands
-- sample_well_forecast.csv - Daily forecast for import
+- `sample_well_forecast.png` - Plot with P10/P50/P90 bands
+- `sample_well_forecast.csv` - Daily forecast for import
 
 ### Batch Mode (Multiple Wells)
-
-mkdir wells
-cp *.csv wells/
-python3 run_example.py --batch ./wells/
+`mkdir wells`
+`cp *.csv wells/`
+`python3 run_example.py --batch ./wells/`
 
 Outputs:
 - Individual plots and CSVs per well
-- batch_summary.csv - Portfolio summary
-- Portfolio totals (P50)
+- `batch_summary.csv` - Portfolio summary
 
 ## Input Data Format
 
 CSV with these columns:
-
 | Column | Description | Units | Required |
-|--------|-------------|-------|----------|
+| --- | --- | --- | --- |
 | days | Days since first production | days | Yes |
 | pressure_psi | Flowing pressure (THP or BHP) | psi | Yes |
 | rate_mscfd | Gas rate | MSCF/day | If gas well |
 | rate_bblpd | Oil rate | bbl/day | If oil well |
 | rate_bwpd | Water rate | bbl/day | Optional |
 
-### Data Requirements
-- Minimum: 30+ days (90+ preferred)
-- Remove or interpolate shut-in periods
-- Small gaps (<30 days) acceptable
-
-## Output Interpretation
-
-| Value | Meaning |
-|-------|---------|
-| P10 | 90% chance EUR exceeds this (conservative) |
-| P50 | Best estimate (median) |
-| P90 | 10% chance EUR exceeds this (optimistic) |
-
 ## Repository Contents
 
 | File | Description |
-|------|-------------|
+| --- | --- |
 | run_example.py | Main forecasting tool |
 | sample_well.csv | Example 10,000 ft Permian Wolfcamp A well |
 | waller_decomposition_v3.md | Technical white paper |
 | requirements.txt | Python dependencies |
+| LICENSE | License terms |
 
 ## Citation
 
-Waller, E. (2026). The Waller Decomposition: Multi-Resolution Wavelet EUR
-Forecasting for Multi-Stage Fractured Horizontal Wells. Technical White Paper v3.0.
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18372228.svg)](https://doi.org/10.5281/zenodo.18372228)
+Waller, E. (2026). The Waller Decomposition: Multi-Resolution Wavelet EUR Forecasting for Multi-Stage Fractured Horizontal Wells. Technical White Paper v3.0.
 
 ## License
 
-Copyright (c) 2026 Eric Waller. All Rights Reserved.
-
-For licensing inquiries: ewaller.com
+See the `LICENSE` file for details.
 
 ## Contact
-
 - Website: ewaller.com

@@ -4,4 +4,3 @@ PyWavelets
 matplotlib
 emcee
 pandas
-streamlit
