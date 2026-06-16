@@ -10,7 +10,7 @@ Traditional software (ARIES, Petra, PhDWin) requires 6–12 months of production
 - Probabilistic Monte Carlo uncertainty
 - Flowback-aware early data conditioning
 
-This is the **dominant science-first approach** — completely free to attract engineers and drive traffic to **LuxiEdge** for advanced AI/agentic enhancements.
+This is the **dominant science-first approach** — completely free 
 
 ## Quick Start (One-Button Easy)
 
