@@ -1,1 +1,0 @@
-Category killer: Physics redo from scratch. No empirical cobble. Free forever. Revenue zero for competitors.
