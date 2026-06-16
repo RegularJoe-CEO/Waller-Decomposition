@@ -1,22 +1,25 @@
-# Waller EUR Predictor
+# Free EUR Predictor
 
 **Scientifically superior physics-first tool** for Estimated Ultimate Recovery (EUR) forecasting in unconventional shale wells.
 
 ## Why It Dominates Legacy Tools
-Traditional software (ARIES, Petra, PhDWin) requires 6–12 months of production data for reliable EUR.  
-**This tool delivers accurate, physics-grounded forecasts from day 30–45** using:
-- Multi-resolution wavelet decomposition (separates fracture and matrix flow regimes)
-- Rate-Normalized Pressure (RNP) mapping to hydraulic diffusivity from Darcy PDE principles
-- Probabilistic Monte Carlo uncertainty
-- Flowback-aware early data conditioning
+Traditional software like ARIES, Petra, and PhDWin typically requires 6–12 months of production history before delivering reliable EUR estimates.
 
-This is the **dominant science-first approach** — completely free 
+**This tool provides accurate, high-confidence forecasts much earlier** — often from just the first 30–45 days of data — while remaining grounded in real reservoir physics.
+
+Key technical advantages:
+- Multi-resolution wavelet decomposition to separate fracture and matrix flow regimes
+- Rate-normalized pressure (RNP) mapping grounded in Darcy flow principles
+- Probabilistic outputs with uncertainty quantification
+- Flowback-aware early-data conditioning
+
+This delivers **orders-of-magnitude better early-life intelligence** for drilling, completion, and acquisition decisions.
 
 ## Quick Start (One-Button Easy)
 
-**Recommended: Web App (Literal Click Button)**
+**Recommended: Web App (Simple Button Interface)**
 ```bash
-git clone https://github.com/RegularJoe-CEO/Waller-Decomposition.git
-cd Waller-Decomposition
+git clone https://github.com/RegularJoe-CEO/Free-EUR-Predictor.git
+cd Free-EUR-Predictor
 pip install -r requirements.txt
 streamlit run app.py
