@@ -1,0 +1,4 @@
+[project]
+name = "waller-eur"
+version = "4.0"
+dependencies = ["torch", "xgboost", "polars", "streamlit", "mlflow", "dvc", "hydra-core", "optuna", "shap", "geopandas", "fastapi"]
