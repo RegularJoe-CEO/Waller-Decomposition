@@ -1,5 +1,5 @@
-torch
-numpy
 pandas
-streamlit
-scikit-learn
+numpy
+matplotlib
+scipy
+openpyxl
