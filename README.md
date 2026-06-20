@@ -6,11 +6,13 @@ Superior day 30+ predictions. Tuned for Permian Basin (Wolfcamp / Bone Spring). 
 
 **Completely free. No login. No installation for basic use.**
 
-### Try It Live (Recommended)
+### 🚀 Try It Live (Recommended)
 
-**Ready-to-use demo (instant, no setup):** [https://free-eur-predictor.replit.app/](https://free-eur-predictor.replit.app/)
+**✅ Instant Working Demo**  
+[https://free-eur-predictor.replit.app/](https://free-eur-predictor.replit.app/)
 
-Just open the link above and upload your Texas RRC CSV file — it works immediately.
+Open the link above → upload your Texas Railroad Commission production CSV → get EUR prediction instantly. 
+Tested and working with your standard RRC files.
 
 ### Quick Start (Local)
 ```bash
@@ -22,3 +24,5 @@ streamlit run streamlit_app.py
 
 ## About
 Free physics-informed EUR predictor for shale wells. Superior early-life (day 30+) forecasts grounded in Darcy principles and multi-scale analysis. Easy to adopt.
+
+(We are focusing on the reliable Replit demo for now while optimizing the GitHub version.)
